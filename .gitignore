@@ -46,3 +46,7 @@ nbdist/
 input/
 output*/
 data/
+
+# Python
+spotify.sqlite
+tracks/
