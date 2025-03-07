@@ -1,0 +1,48 @@
+# Directorios y archivos generados por Maven
+/target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+# Archivos de configuración de IDEs
+/.idea/
+/*.iml
+*.class
+*.log
+*.swp
+*.swo
+*.DS_Store
+
+# Archivos de configuración de sistema operativo
+Thumbs.db
+.DS_Store
+
+# Archivos de configuración de Eclipse
+.project
+.classpath
+.settings/
+
+# Archivos de configuración de IntelliJ IDEA
+.idea/
+*.iws
+*.ipr
+*.iml
+
+# Archivos de configuración de NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# Archivos de configuración de VS Code
+.vscode/
+
+# Archivos de configuración de sistema operativo
+*.swp
+*~
+
+# Archivos de entrada y salida de datos
+input/
+output*/
+data/
