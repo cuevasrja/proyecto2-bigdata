@@ -1,6 +1,13 @@
 package spotify;
 
-import org.apache.hadoop.thirdparty.protobuf.Any;
+import java.util.Map;
+
+import org.apache.mahout.math.RandomAccessSparseVector;
+import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder;
+import org.apache.mahout.vectorizer.encoders.FeatureVectorEncoder;
+import org.apache.mahout.vectorizer.encoders.StaticWordValueEncoder;
+import com.google.common.collect.Maps;
+import java.util.Iterator;
 
 /*
  {"namespace": "classes.avro",
@@ -42,71 +49,67 @@ import org.apache.hadoop.thirdparty.protobuf.Any;
 }
  */
 public class Track {
-    public String id;
-    public String track_name;
-    public int disc_number;
-    public int duration;
-    public int explicit;
-    public String audio_feature_id;
-    public String preview_url;
-    public int track_number;
-    public int popularity;
-    public int is_playable;
-    public float acousticness;
-    public float danceability;
-    public float energy;
-    public float instrumentalness;
-    public int key;
-    public float liveness;
-    public float loudness;
-    public int mode;
-    public float speechiness;
-    public float tempo;
-    public int time_signature;
-    public float valence;
-    public String album_name;
-    public String album_group;
-    public String album_type;
-    public String release_date;
-    public int album_popularity;
-    public String artist_name;
-    public int artist_popularity;
-    public int followers;
-    public String genre_id;
+    public static final int FEATURES = 20;
+    private static final ConstantValueEncoder interceptEncoder = new ConstantValueEncoder("intercept");
+    private static final FeatureVectorEncoder featureEncoder = new StaticWordValueEncoder("feature");
+
+    private RandomAccessSparseVector vector;
+
+    private Map<String, String> fields = Maps.newLinkedHashMap();
 
 
-    public Track(String id, String track_name, int disc_number, int duration, int explicit, String audio_feature_id, String preview_url, int track_number, int popularity, int is_playable, float acousticness, float danceability, float energy, float instrumentalness, int key, float liveness, float loudness, int mode, float speechiness, float tempo, int time_signature, float valence, String album_name, String album_group, String album_type, String release_date, int album_popularity, String artist_name, int artist_popularity, int followers, String genre_id) {
-        this.id = id;
-        this.track_name = track_name;
-        this.disc_number = disc_number;
-        this.duration = duration;
-        this.explicit = explicit;
-        this.audio_feature_id = audio_feature_id;
-        this.preview_url = preview_url;
-        this.track_number = track_number;
-        this.popularity = popularity;
-        this.is_playable = is_playable;
-        this.acousticness = acousticness;
-        this.danceability = danceability;
-        this.energy = energy;
-        this.instrumentalness = instrumentalness;
-        this.key = key;
-        this.liveness = liveness;
-        this.loudness = loudness;
-        this.mode = mode;
-        this.speechiness = speechiness;
-        this.tempo = tempo;
-        this.time_signature = time_signature;
-        this.valence = valence;
-        this.album_name = album_name;
-        this.album_group = album_group;
-        this.album_type = album_type;
-        this.release_date = release_date;
-        this.album_popularity = album_popularity;
-        this.artist_name = artist_name;
-        this.artist_popularity = artist_popularity;
-        this.followers = followers;
-        this.genre_id = genre_id;
+    public Track(Iterable<String> fieldNames, Iterable<String> values) {
+        vector = new RandomAccessSparseVector(FEATURES);
+        Iterator<String> valueIterator = values.iterator();
+        interceptEncoder.addToVector("1", vector);
+        for (String fieldName : fieldNames) {
+            String value = valueIterator.next();
+            fields.put(fieldName, value);
+
+            switch (fieldName){
+                case "id":
+                case "track_name":
+                case "artist_name":
+                case "genre_id":
+                    featureEncoder.addToVector(value, 1.0, vector);
+                    break;
+                case "audio_feature_id":
+                case "preview_url":
+                    featureEncoder.addToVector(value != null ? value : "", 0.0, vector);
+                    break;
+                case "disc_number":
+                case "duration":
+                case "explicit":
+                case "track_number":
+                case "popularity":
+                case "is_playable":
+                case "key":
+                case "mode":
+                case "time_signature":
+                case "album_popularity":
+                case "artist_popularity":
+                case "followers":
+                    int v = value != null ? Integer.parseInt(value) : 0;
+                    String vString = Integer.toString(v);
+                    featureEncoder.addToVector(vString, v, vector);
+                    break;
+                case "acousticness":
+                case "danceability":
+                case "energy":
+                case "instrumentalness":
+                case "liveness":
+                case "loudness":
+                case "speechiness":
+                case "tempo":
+                case "valence":
+                    float f = value != null ? Float.parseFloat(value) : 0.0f;
+                    String fString = Float.toString(f);
+                    featureEncoder.addToVector(fString, f, vector);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown field name: " + fieldName);
+            }
+        }
 
     }
 }

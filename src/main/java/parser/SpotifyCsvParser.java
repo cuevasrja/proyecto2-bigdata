@@ -11,10 +11,44 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import spotify.Track;
 
 public class SpotifyCsvParser {
+    public static final Iterable<String> CSV_HEADER = Arrays.asList(
+        "id",
+        "track_name",
+        "disc_number",
+        "duration",
+        "explicit",
+        "audio_feature_id",
+        "preview_url",
+        "track_number",
+        "popularity",
+        "is_playable",
+        "acousticness",
+        "danceability",
+        "energy",
+        "instrumentalness",
+        "key",
+        "liveness",
+        "loudness",
+        "mode",
+        "speechiness",
+        "tempo",
+        "time_signature",
+        "valence",
+        "album_name",
+        "album_group",
+        "album_type",
+        "release_date",
+        "album_popularity",
+        "artist_name",
+        "artist_popularity",
+        "followers",
+        "genre_id"
+    );
 
     /**
      * Parse the records in a text file.
@@ -63,10 +97,10 @@ public class SpotifyCsvParser {
      */
     private Track parseCSVLine(String line) {
         // Create a list to store the fields
-        List<String> fields = new ArrayList<>();
+        List<String> values = new ArrayList<>();
 
         // Create a string builder to store the current field
-        StringBuilder currentField = new StringBuilder();
+        StringBuilder currentValue = new StringBuilder();
         // Create a flag to keep track of whether we're inside quotes
         boolean inQuotes = false;
 
@@ -78,56 +112,24 @@ public class SpotifyCsvParser {
                 inQuotes = !inQuotes; // Toggle the inQuotes flag
             } else if (c == ',' && !inQuotes) {
                 // If we encounter a comma and we're not inside quotes, it's the end of a field
-                fields.add(currentField.toString());
-                currentField.setLength(0); // Clear the current field
+                values.add(currentValue.toString());
+                currentValue.setLength(0); // Clear the current field
             } else {
                 // Otherwise, just add the character to the current field
-                currentField.append(c);
+                currentValue.append(c);
             }
         }
         // Add the last field
-        fields.add(currentField.toString());
+        values.add(currentValue.toString());
 
         // Create a new Track object
         Track track;
         try {
-            track = new Track(
-                fields.get(0),
-                fields.get(1),
-                fields.get(2) != null ? Integer.parseInt(fields.get(2)) : 0,
-                Integer.parseInt(fields.get(3)),
-                Integer.parseInt(fields.get(4)),
-                fields.get(5) != null ? fields.get(5) : "",
-                fields.get(6) != null ? fields.get(6) : "",
-                Integer.parseInt(fields.get(7)),
-                Integer.parseInt(fields.get(8)),
-                fields.get(9) != null ? Integer.parseInt(fields.get(9)) : 0,
-                Float.parseFloat(fields.get(10)),
-                Float.parseFloat(fields.get(11)),
-                Float.parseFloat(fields.get(12)),
-                Float.parseFloat(fields.get(13)),
-                Integer.parseInt(fields.get(14)),
-                Float.parseFloat(fields.get(15)),
-                Float.parseFloat(fields.get(16)),
-                Integer.parseInt(fields.get(17)),
-                Float.parseFloat(fields.get(18)),
-                Float.parseFloat(fields.get(19)),
-                Integer.parseInt(fields.get(20)),
-                Float.parseFloat(fields.get(21)),
-                fields.get(22) != null ? fields.get(22) : "",
-                fields.get(23) != null ? fields.get(23) : "",
-                fields.get(24) != null ? fields.get(24) : "",
-                fields.get(25) != null ? fields.get(25) : "",
-                fields.get(26) != null ? Integer.parseInt(fields.get(26)) : 0,
-                fields.get(27),
-                Integer.parseInt(fields.get(28)),
-                Integer.parseInt(fields.get(29)),
-                fields.get(30)
-            );
+            track = new Track(CSV_HEADER, values);
         } catch (Exception e) {
             // If there's an error, print the line and the fields
             System.out.println("Error parsing line: " + line);
-            System.out.println("Fields: " + fields);
+            System.out.println("Fields: " + values);
             e.printStackTrace();
             return null;
         }
