@@ -49,19 +49,22 @@ import java.util.Iterator;
 }
  */
 public class Track {
-    public static final int FEATURES = 20;
+    public static final int FEATURES = 27;
+    public static final int TARGETS = 3;
     private static final ConstantValueEncoder interceptEncoder = new ConstantValueEncoder("intercept");
     private static final FeatureVectorEncoder featureEncoder = new StaticWordValueEncoder("feature");
+    private static final FeatureVectorEncoder targetEncoder = new StaticWordValueEncoder("target");
 
-    private RandomAccessSparseVector vector;
+    private RandomAccessSparseVector featuresVector;
+    private RandomAccessSparseVector targetsVector;
 
     private Map<String, String> fields = Maps.newLinkedHashMap();
 
-
     public Track(Iterable<String> fieldNames, Iterable<String> values) {
-        vector = new RandomAccessSparseVector(FEATURES);
+        featuresVector = new RandomAccessSparseVector(FEATURES);
+        targetsVector = new RandomAccessSparseVector(TARGETS);
         Iterator<String> valueIterator = values.iterator();
-        interceptEncoder.addToVector("1", vector);
+        interceptEncoder.addToVector("1", featuresVector);
         for (String fieldName : fieldNames) {
             String value = valueIterator.next();
             fields.put(fieldName, value);
@@ -71,27 +74,27 @@ public class Track {
                 case "track_name":
                 case "artist_name":
                 case "genre_id":
-                    featureEncoder.addToVector(value, 1.0, vector);
+                    featureEncoder.addToVector(fieldName + ":" +value, 1.0, featuresVector);
                     break;
                 case "audio_feature_id":
                 case "preview_url":
-                    featureEncoder.addToVector(value != null ? value : "", 0.0, vector);
+                case "album_name":
+                case "album_group":
+                case "album_type":
+                case "release_date":
+                    featureEncoder.addToVector(value != null ? fieldName + ":" + value : fieldName, 0.0, featuresVector);
                     break;
                 case "disc_number":
                 case "duration":
                 case "explicit":
                 case "track_number":
-                case "popularity":
                 case "is_playable":
                 case "key":
                 case "mode":
                 case "time_signature":
-                case "album_popularity":
-                case "artist_popularity":
                 case "followers":
-                    int v = value != null ? Integer.parseInt(value) : 0;
-                    String vString = Integer.toString(v);
-                    featureEncoder.addToVector(vString, v, vector);
+                    int v = value != null && !value.equals("") ? Integer.parseInt(value) : 0;
+                    featureEncoder.addToVector(fieldName, v, featuresVector);
                     break;
                 case "acousticness":
                 case "danceability":
@@ -102,14 +105,30 @@ public class Track {
                 case "speechiness":
                 case "tempo":
                 case "valence":
-                    float f = value != null ? Float.parseFloat(value) : 0.0f;
-                    String fString = Float.toString(f);
-                    featureEncoder.addToVector(fString, f, vector);
+                    float f = value != null && !value.equals("") ? Float.parseFloat(value) : 0.0f;
+                    featureEncoder.addToVector(fieldName, f, featuresVector);
+                    break;
+                case "popularity":
+                case "album_popularity":
+                case "artist_popularity":
+                    int t = value != null && !value.equals("") ? Integer.parseInt(value) : 0;
+                    targetEncoder.addToVector(fieldName, t, targetsVector);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown field name: " + fieldName);
             }
         }
-
     }
+
+    public int getCategory(String target) {
+        return Integer.parseInt(fields.get(target));
+    }
+
+    public RandomAccessSparseVector getFeatures() {
+        return featuresVector;
+    }
+
+    // RandomAccessSparseVector getTargets() {
+    //     return targetsVector;
+    // }
 }

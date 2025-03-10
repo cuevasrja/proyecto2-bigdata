@@ -57,6 +57,7 @@ public class SpotifyCsvParser {
      * @throws IOException
      */
     public List<Track> parse(Text value) throws IOException {
+        System.out.println("\033[1;94mParsing file...\033[0m");
         // Create a list to store the records
         List<Track> records = new ArrayList<>();
 
@@ -87,6 +88,7 @@ public class SpotifyCsvParser {
             IOUtils.closeStream(reader);
             IOUtils.closeStream(inputStream);
         }
+        System.out.println("\033[1;92mFile parsed.\033[0m");
         return records;
     }
 
@@ -131,6 +133,7 @@ public class SpotifyCsvParser {
             System.out.println("Error parsing line: " + line);
             System.out.println("Fields: " + values);
             e.printStackTrace();
+            System.exit(1);
             return null;
         }
 
