@@ -49,7 +49,7 @@ import java.util.Iterator;
 }
  */
 public class Track {
-    public static final int FEATURES = 27;
+    public static final int FEATURES = 17;
     public static final int TARGETS = 3;
     private static final ConstantValueEncoder interceptEncoder = new ConstantValueEncoder("intercept");
     private static final FeatureVectorEncoder featureEncoder = new StaticWordValueEncoder("feature");
@@ -74,7 +74,7 @@ public class Track {
                 case "track_name":
                 case "artist_name":
                 case "genre_id":
-                    featureEncoder.addToVector(fieldName + ":" +value, 1.0, featuresVector);
+                    // featureEncoder.addToVector(fieldName + ":" +value, 1.0, featuresVector);
                     break;
                 case "audio_feature_id":
                 case "preview_url":
@@ -82,7 +82,7 @@ public class Track {
                 case "album_group":
                 case "album_type":
                 case "release_date":
-                    featureEncoder.addToVector(value != null ? fieldName + ":" + value : fieldName, 0.0, featuresVector);
+                    // featureEncoder.addToVector(value != null ? fieldName + ":" + value : fieldName, 0.0, featuresVector);
                     break;
                 case "disc_number":
                 case "duration":

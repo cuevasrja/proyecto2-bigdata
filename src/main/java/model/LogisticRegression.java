@@ -2,19 +2,20 @@ package model;
 
 import java.util.List;
 
-import org.apache.mahout.classifier.sgd.L1;
+import org.apache.mahout.classifier.sgd.ElasticBandPrior;
 import org.apache.mahout.classifier.sgd.OnlineLogisticRegression;
 
 import spotify.Track;
 
 public class LogisticRegression implements AutoCloseable {
     private static final int RUNS = 100;
-    private static double ALPHA = 1.0;
+    private static double ALPHA = 0.01;
     private static double LAMBDA = 100.0;
     private static int STEP_OFFSET = 1000;
     private static float DECAY_EXPO = 2.0f;
-    private static float LEARNING_RATE = 10.0f;
-    private static int NUM_CATEGORIES = 100;
+    private static float LEARNING_RATE = 0.001f;
+    private static int NUM_CATEGORIES = 101;
+    private static final double l1Ratio = 0.1;
     private static OnlineLogisticRegression model;
     private static String target;
 
@@ -28,7 +29,7 @@ public class LogisticRegression implements AutoCloseable {
         DECAY_EXPO = decayExpo;
         LEARNING_RATE = learningRate;
         NUM_CATEGORIES = numCategories;
-        try (OnlineLogisticRegression tempModel = new OnlineLogisticRegression(NUM_CATEGORIES, Track.FEATURES, new L1())) {
+        try (OnlineLogisticRegression tempModel = new OnlineLogisticRegression(NUM_CATEGORIES, Track.FEATURES, new ElasticBandPrior(l1Ratio))) {
             tempModel.learningRate(LEARNING_RATE)
                 .alpha(ALPHA)
                 .lambda(LAMBDA)
@@ -43,7 +44,7 @@ public class LogisticRegression implements AutoCloseable {
         if (target == null || target.isEmpty()) {
             target = "popularity";
         }
-        try (OnlineLogisticRegression tempModel = new OnlineLogisticRegression(NUM_CATEGORIES, Track.FEATURES, new L1())) {
+        try (OnlineLogisticRegression tempModel = new OnlineLogisticRegression(NUM_CATEGORIES, Track.FEATURES, new ElasticBandPrior())) {
             tempModel.learningRate(LEARNING_RATE)
                 .alpha(ALPHA)
                 .lambda(LAMBDA)

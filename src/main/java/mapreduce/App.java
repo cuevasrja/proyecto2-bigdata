@@ -16,26 +16,10 @@ import model.LogisticRegression;
 
 public class App {
     private static double[] ALPHA = {
-        1.0,
-        0.5,
-        0.1,
-        0.05,
-        0.01,
-        0.005,
-        0.001,
-        0.0005,
-        0.0001
+        0.01
     };
     private static double[] LAMBDA = {
-        100.0,
-        50.0,
-        10.0,
-        5.0,
-        1.0,
-        0.5,
-        0.1,
-        0.05,
-        0.01
+        100.0
     };
     private static int[] STEP_OFFSET = {
         1000,
@@ -80,30 +64,11 @@ public class App {
         SpotifyCsvParser parser = new SpotifyCsvParser();
         try {
             List<Track> tracks = parser.parse(file);
-            float max_auc = 0.0f;
-            String best_params = "";
-            for (double alpha : ALPHA) {
-                for (double lambda : LAMBDA) {
-                    for (int stepOffset : STEP_OFFSET) {
-                        for (float decayExpo : DECAY_EXPO) {
-                            for (float learningRate : LEARNING_RATE) {
-                                System.out.println("Alpha: " + alpha + ", Lambda: " + lambda + ", Step Offset: " + stepOffset + ", Decay Exponent: " + decayExpo + ", Learning Rate: " + learningRate);
-                                LogisticRegression model = new LogisticRegression(target, alpha, lambda, stepOffset, decayExpo, learningRate, NUM_CATEGORIES);
-                                model.train(tracks);
-                                float auc = model.test(tracks);
-                                if (auc > max_auc) {
-                                    max_auc = auc;
-                                    best_params = "Alpha: " + alpha + ", Lambda: " + lambda + ", Step Offset: " + stepOffset + ", Decay Exponent: " + decayExpo + ", Learning Rate: " + learningRate;
-                                }
-                                System.out.println("AUC: " + auc);
-                                model.close();
-                            }
-                        }
-                    }
-                }
-            }
-            System.out.println("Best parameters: " + best_params);
-            System.out.println("Max AUC: " + max_auc);
+            LogisticRegression model = new LogisticRegression(target);
+            model.train(tracks);
+            float auc = model.test(tracks);
+            System.out.println("AUC: " + auc);
+            model.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
