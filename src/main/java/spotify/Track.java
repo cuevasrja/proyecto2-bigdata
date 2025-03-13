@@ -7,6 +7,11 @@ import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder;
 import org.apache.mahout.vectorizer.encoders.FeatureVectorEncoder;
 import org.apache.mahout.vectorizer.encoders.StaticWordValueEncoder;
 import com.google.common.collect.Maps;
+
+import weka.core.DenseInstance;
+import weka.core.Instance;
+import weka.core.Instances;
+
 import java.util.Iterator;
 
 /*
@@ -17,8 +22,8 @@ import java.util.Iterator;
      {"name": "id", "type": "string"},
      {"name": "track_name",  "type": "string"},
      {"name": "disc_number", "type": "int"},
-     {"name": "duration", "type": "int"},
-     {"name": "explicit", "type": "int"},
+    1 {"name": "duration", "type": "int"},
+    2 {"name": "explicit", "type": "int"},
      {"name": "audio_feature_id", "type": ["string", "null"]},
      {"name": "preview_url", "type": ["string", "null"]},
      {"name": "track_number", "type": ["int", "string", "null"]},
@@ -50,7 +55,7 @@ import java.util.Iterator;
  */
 public class Track {
     public static final int FEATURES = 17;
-    public static final int TARGETS = 3;
+    public static final int TARGETS = 1;
     private static final ConstantValueEncoder interceptEncoder = new ConstantValueEncoder("intercept");
     private static final FeatureVectorEncoder featureEncoder = new StaticWordValueEncoder("feature");
     private static final FeatureVectorEncoder targetEncoder = new StaticWordValueEncoder("target");
@@ -82,12 +87,12 @@ public class Track {
                 case "album_group":
                 case "album_type":
                 case "release_date":
+                case "track_number":
+                case "disc_number":
                     // featureEncoder.addToVector(value != null ? fieldName + ":" + value : fieldName, 0.0, featuresVector);
                     break;
-                case "disc_number":
                 case "duration":
                 case "explicit":
-                case "track_number":
                 case "is_playable":
                 case "key":
                 case "mode":
@@ -126,6 +131,94 @@ public class Track {
 
     public RandomAccessSparseVector getFeatures() {
         return featuresVector;
+    }
+
+    public Double[] getFeaturesArray() {
+        Double[] features = new Double[FEATURES];
+        for (int i = 0; i < FEATURES; i++) {
+            features[i] = featuresVector.get(i);
+        }
+        return features;
+    }
+
+    public double getAcousticness() {
+        return fields.get("acousticness") != null ? Double.parseDouble(fields.get("acousticness")) : 0.0;
+    }
+
+    public double getDanceability() {
+        return fields.get("danceability") != null ? Double.parseDouble(fields.get("danceability")) : 0.0;
+    }
+
+    public double getEnergy() {
+        return fields.get("energy") != null ? Double.parseDouble(fields.get("energy")) : 0.0;
+    }
+
+    public double getInstrumentalness() {
+        return fields.get("instrumentalness") != null ? Double.parseDouble(fields.get("instrumentalness")) : 0.0;
+    }
+
+    public double getSpeechiness() {
+        return fields.get("speechiness") != null ? Double.parseDouble(fields.get("speechiness")) : 0.0;
+    }
+
+    public double getLiveness() {
+        return fields.get("liveness") != null ? Double.parseDouble(fields.get("liveness")) : 0.0;
+    }
+
+    public double getLoudness() {
+        return fields.get("loudness") != null ? Double.parseDouble(fields.get("loudness")) : 0.0;
+    }
+
+    public double getTempo() {
+        return fields.get("tempo") != null ? Double.parseDouble(fields.get("tempo")) : 0.0;
+    }
+
+    public double getValence() {
+        return fields.get("valence") != null ? Double.parseDouble(fields.get("valence")) : 0.0;
+    }
+
+    public double getDuration() {
+        return fields.get("duration") != null ? Double.parseDouble(fields.get("duration")) : 0.0;
+    }
+
+    public double getExplicit() {
+        return fields.get("explicit") != null ? Double.parseDouble(fields.get("explicit")) : 0.0;
+    }
+
+    public double getKey() {
+        return fields.get("key") != null ? Double.parseDouble(fields.get("key")) : 0.0;
+    }
+
+    public double getTimeSignature() {
+        return fields.get("time_signature") != null ? Double.parseDouble(fields.get("time_signature")) : 0.0;
+    }
+
+    public double getMode() {
+        return fields.get("mode") != null ? Double.parseDouble(fields.get("mode")) : 0.0;
+    }
+
+    public double getAlbumPopularity() {
+        return fields.get("album_popularity") != null && !fields.get("album_popularity").equals("") ? Double.parseDouble(fields.get("album_popularity")) : 0.0;
+    }
+
+    public double getFollowers() {
+        return fields.get("followers") != null ? Double.parseDouble(fields.get("followers")) : 0.0;
+    }
+
+    public double getArtistPopularity() {
+        return fields.get("artist_popularity") != null ? Double.parseDouble(fields.get("artist_popularity")) : 0.0;
+    }
+
+
+    public Instance toInstance(Instances dataset, String target) {
+        Instance instance = new DenseInstance(FEATURES+1);
+        instance.setDataset(dataset);
+        for (int i = 0; i < FEATURES; i++) {
+            instance.setValue(i, featuresVector.get(i));
+        }
+        instance.setValue(FEATURES, this.getCategory(target));
+        
+        return instance;
     }
 
     // RandomAccessSparseVector getTargets() {

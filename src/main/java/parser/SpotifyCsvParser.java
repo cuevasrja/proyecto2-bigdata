@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import spotify.Track;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
+import weka.core.Instances;
 
 public class SpotifyCsvParser {
     public static final Iterable<String> CSV_HEADER = Arrays.asList(
@@ -140,4 +143,65 @@ public class SpotifyCsvParser {
         // Return the fields as a Track object
         return track;
     }
+
+    public Instances toDataset(List<Track> tracks, String target) {
+        // Define los atributos
+        ArrayList<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("acousticness"));
+        attributes.add(new Attribute("danceability"));
+        attributes.add(new Attribute("energy"));
+        attributes.add(new Attribute("instrumentalness"));
+        attributes.add(new Attribute("liveness"));
+        attributes.add(new Attribute("loudness"));
+        attributes.add(new Attribute("speechiness"));
+        attributes.add(new Attribute("tempo"));
+        attributes.add(new Attribute("valence"));
+        attributes.add(new Attribute("duration"));
+        attributes.add(new Attribute("explicit"));
+        attributes.add(new Attribute("key"));
+        attributes.add(new Attribute("mode"));
+        attributes.add(new Attribute("time_signature"));
+        attributes.add(new Attribute("followers"));
+        attributes.add(new Attribute("album_popularity"));
+        attributes.add(new Attribute("artist_popularity"));
+        
+        // Define el atributo de clase (target)
+        ArrayList<String> classValues = new ArrayList<>();
+        for (int i = 0; i <= 100; i++) {
+            classValues.add(String.valueOf(i));
+        }
+        attributes.add(new Attribute(target, classValues));
+
+        // Crea el conjunto de datos
+        Instances dataset = new Instances("tracks", attributes, tracks.size());
+        dataset.setClassIndex(attributes.size() - 1);
+
+        // Agrega las instancias
+        for (Track track : tracks) {
+            double[] values = new double[attributes.size()];
+            values[0] = track.getAcousticness();
+            values[1] = track.getDanceability();
+            values[2] = track.getEnergy();
+            values[3] = track.getInstrumentalness();
+            values[4] = track.getLiveness();
+            values[5] = track.getLoudness();
+            values[6] = track.getSpeechiness();
+            values[7] = track.getTempo();
+            values[8] = track.getValence();
+            values[9] = track.getDuration();
+            values[10] = track.getExplicit();
+            values[11] = track.getKey();
+            values[12] = track.getMode();
+            values[13] = track.getTimeSignature();
+            values[14] = track.getFollowers();
+            values[15] = track.getAlbumPopularity();
+            values[16] = track.getArtistPopularity();
+            values[17] = classValues.indexOf(String.valueOf(track.getCategory(target)));
+
+            dataset.add(new DenseInstance(1.0, values));
+        }
+
+        return dataset;
+    }
+
 }
