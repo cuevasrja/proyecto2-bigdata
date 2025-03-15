@@ -100,7 +100,7 @@ public class SpotifyCsvParser {
      * @param line
      * @return An array of fields.
      */
-    private Track parseCSVLine(String line) {
+    public Track parseCSVLine(String line) {
         // Create a list to store the fields
         List<String> values = new ArrayList<>();
 
@@ -144,8 +144,14 @@ public class SpotifyCsvParser {
         return track;
     }
 
+    /**
+     * Convert a list of tracks to a Weka dataset.
+     * @param tracks
+     * @param target
+     * @return A Weka dataset.
+     */
     public Instances toDataset(List<Track> tracks, String target) {
-        // Define los atributos
+        // Define the attributes
         ArrayList<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("acousticness"));
         attributes.add(new Attribute("danceability"));
@@ -165,18 +171,19 @@ public class SpotifyCsvParser {
         attributes.add(new Attribute("album_popularity"));
         attributes.add(new Attribute("artist_popularity"));
         
-        // Define el atributo de clase (target)
+        // Define the class attribute values
         ArrayList<String> classValues = new ArrayList<>();
         for (int i = 0; i <= 100; i++) {
             classValues.add(String.valueOf(i));
         }
+        // Add the class attribute target
         attributes.add(new Attribute(target, classValues));
 
-        // Crea el conjunto de datos
+        // Create the dataset
         Instances dataset = new Instances("tracks", attributes, tracks.size());
         dataset.setClassIndex(attributes.size() - 1);
 
-        // Agrega las instancias
+        // Add the tracks to the dataset as instances
         for (Track track : tracks) {
             double[] values = new double[attributes.size()];
             values[0] = track.getAcousticness();

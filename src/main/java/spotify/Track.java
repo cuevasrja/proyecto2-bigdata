@@ -11,45 +11,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/*
- {"namespace": "classes.avro",
- "type": "record",
- "name": "spotify",
- "fields": [
-     {"name": "id", "type": "string"},
-     {"name": "track_name",  "type": "string"},
-     {"name": "disc_number", "type": "int"},
-     {"name": "duration", "type": "int"},
-     {"name": "explicit", "type": "int"},
-     {"name": "audio_feature_id", "type": ["string", "null"]},
-     {"name": "preview_url", "type": ["string", "null"]},
-     {"name": "track_number", "type": ["int", "string", "null"]},
-     {"name": "popularity", "type": "int"},
-     {"name": "is_playable", "type": "int"},
-     {"name": "acousticness", "type": "float"},
-     {"name": "danceability", "type": "float"},
-     {"name": "energy", "type": "float"},
-     {"name": "instrumentalness", "type": "float"},
-     {"name": "key", "type": ["int", "string", "null"]},
-     {"name": "liveness", "type": "float"},
-     {"name": "loudness", "type": "float"},
-     {"name": "mode", "type": "int"},
-     {"name": "speechiness", "type": "float"},
-     {"name": "tempo", "type": "float"},
-     {"name": "time_signature", "type": "int"},
-     {"name": "valence", "type": "float"},
-     {"name": "album_name", "type": ["string", "null"]},
-     {"name": "album_group", "type": ["string", "null"]},
-     {"name": "album_type", "type": ["string", "null"]},
-     {"name": "release_date", "type": ["string", "null"]},
-     {"name": "album_popularity", "type": ["int", "null"]},
-     {"name": "artist_name", "type": "string"},
-     {"name": "artist_popularity", "type": "int"},
-     {"name": "followers", "type": "int"},
-     {"name": "genre_id", "type": ["string", "null"]}
- ]
-}
- */
 public class Track {
     public static final int FEATURES = 17;
     public static final int TARGETS = 1;
@@ -124,6 +85,10 @@ public class Track {
         return trackFeatures;
     }
 
+    /**
+     * Get the features as an array
+     * @return An array of features
+     */
     public Double[] getFeaturesArray() {
         Double[] features = new Double[FEATURES];
         for (int i = 0; i < FEATURES; i++) {
@@ -200,7 +165,12 @@ public class Track {
         return fields.get("artist_popularity") != null ? Double.parseDouble(fields.get("artist_popularity")) : 0.0;
     }
 
-
+    /**
+     * Convert a track to an instance
+     * @param dataset The dataset
+     * @param target The target attribute
+     * @return An Weka instance object
+     */
     public Instance toInstance(Instances dataset, String target) {
         Instance instance = new DenseInstance(FEATURES+1);
         instance.setDataset(dataset);
