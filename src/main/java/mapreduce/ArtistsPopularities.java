@@ -15,33 +15,53 @@ import spotify.Track;
 public class ArtistsPopularities extends Configured implements Tool {
     static SpotifyCsvParser parser = new SpotifyCsvParser();
 
+    public static class ArtistsPopularitiesMapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable[]> {
+        private Text artist = new Text();
+        private IntWritable songPopularity = new IntWritable();
+        private IntWritable artistPopularity = new IntWritable();
 
-    public static class ArtistsPopularitiesMapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, IntWritable> {
-        // private final static IntWritable one = new IntWritable(1);
-        // private Text artist = new Text();
-
-        public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+        /**
+         * Map the input values.
+         * @param key The key.
+         * @param value The value.
+         * @param output Use to collect the output.
+         * @param reporter Facility to report progress.
+         * @throws IOException
+         */
+        public void map(LongWritable key, Text value, OutputCollector<Text, IntWritable[]> output, Reporter reporter) throws IOException {
             String line = value.toString();
             Track track = parser.parseCSVLine(line);
-            // if (parts.length == 19) {
-            //     artist.set(parts[2]);
-            //     output.collect(artist, one);
-            // }
+            artist.set(track.get("artist_name"));
+            songPopularity.set(Integer.parseInt(track.get("popularity")));
+            artistPopularity.set(Integer.parseInt(track.get("artist_popularity")));
+            output.collect(artist, new IntWritable[]{songPopularity, artistPopularity});
         }
-
     }
     
-    public static class ArtistsPopularitiesReducer extends MapReduceBase implements Reducer<Text, IntWritable, Text, IntWritable> {
-        public void reduce(Text key, Iterator<IntWritable> values, OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
-            // int sum = 0;
-            // while (values.hasNext()) {
-            //     sum += values.next().get();
-            // }
-            // output.collect(key, new IntWritable(sum));
+    public static class ArtistsPopularitiesReducer extends MapReduceBase implements Reducer<Text, IntWritable[], Text, FloatWritable> {
+        /**
+         * Reduce the values for each key.
+         * @param key The key.
+         * @param values The values.
+         * @param output Use to collect the output.
+         * @param reporter Facility to report progress.
+         * @throws IOException
+         */
+        public void reduce(Text key, Iterator<IntWritable[]> values, OutputCollector<Text, FloatWritable> output, Reporter reporter) throws IOException {
+            float sum = 0;
+            IntWritable[] actual = values.next();
+            int artistPopularity = actual[1].get();
+            int count = 1;
+            do {
+                sum += actual[0].get();
+                actual = values.next();
+                count++;
+            } while (values.hasNext());
+            sum /= count;
+            float diff = sum - artistPopularity;
+            output.collect(key, new FloatWritable(diff));
         }
-
     }
-
 
     /**
      * Run the tool.

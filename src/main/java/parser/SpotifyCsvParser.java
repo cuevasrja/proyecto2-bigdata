@@ -98,7 +98,7 @@ public class SpotifyCsvParser {
     /**
      * Parse a line of CSV data.
      * @param line
-     * @return An array of fields.
+     * @return A Track object.
      */
     public Track parseCSVLine(String line) {
         // Create a list to store the fields
@@ -203,7 +203,7 @@ public class SpotifyCsvParser {
             values[14] = track.getFollowers();
             values[15] = track.getAlbumPopularity();
             values[16] = track.getArtistPopularity();
-            values[17] = classValues.indexOf(String.valueOf(track.getCategory(target)));
+            values[17] = classValues.indexOf(String.valueOf(track.getTarget(target)));
 
             dataset.add(new DenseInstance(1.0, values));
         }

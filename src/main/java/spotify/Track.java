@@ -77,7 +77,11 @@ public class Track {
         }
     }
 
-    public int getCategory(String target) {
+    public String get(String field) {
+        return fields.get(field);
+    }
+
+    public int getTarget(String target) {
         return Integer.parseInt(fields.get(target));
     }
 
@@ -177,7 +181,7 @@ public class Track {
         for (int i = 0; i < FEATURES; i++) {
             instance.setValue(i, trackFeatures.get(i));
         }
-        instance.setValue(FEATURES, this.getCategory(target));
+        instance.setValue(FEATURES, this.getTarget(target));
         
         return instance;
     }
