@@ -29,15 +29,15 @@ public class ClassificationModel {
         classifier.buildClassifier(dataset);
     }
 
-    public void predict(List<Track> tracks) throws Exception {
+    public double[] predict(List<Track> tracks) throws Exception {
         Instances dataset = parser.trackToDataset(tracks, target);
         eval = new Evaluation(dataset);
-        eval.evaluateModel(classifier, dataset);
+        return eval.evaluateModel(classifier, dataset);
     }
 
-    public void predict(Instances dataset) throws Exception {
+    public double[] predict(Instances dataset) throws Exception {
         eval = new Evaluation(dataset);
-        eval.evaluateModel(classifier, dataset);
+        return eval.evaluateModel(classifier, dataset);
     }
 
     public void printMetrics() {

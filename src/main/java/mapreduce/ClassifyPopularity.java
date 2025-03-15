@@ -47,7 +47,7 @@ public class ClassifyPopularity extends Configured implements Tool{
         }
     }
 
-    public static class SongPopularityReducer extends MapReduceBase implements Reducer<Text, DoubleWritable[], Text, DoubleWritable> {
+    public static class SongPopularityReducer extends MapReduceBase implements Reducer<Text, DoubleWritable[], Text, DoubleWritable[]> {
         /**
          * Convert the array of DoubleWritable to a Weka dataset.
          * @param data The data.
@@ -115,13 +115,20 @@ public class ClassifyPopularity extends Configured implements Tool{
          * @param reporter Facility to report progress.
          * @throws IOException
          */
-        public void reduce(Text key, Iterator<DoubleWritable[]> values, OutputCollector<Text, DoubleWritable> output, Reporter reporter) throws IOException {
+        public void reduce(Text key, Iterator<DoubleWritable[]> values, OutputCollector<Text, DoubleWritable[]> output, Reporter reporter) throws IOException {
             Instances dataset = arrayToDataset(values, "popularity");
+            double albumPopularity = values.hasNext() ? values.next()[15].get() : 0;
             ClassificationModel model = new ClassificationModel("popularity");
             try {
                 model.train(dataset);
-                model.predict(dataset);
+                double[] predictions = model.predict(dataset);
                 model.printMetrics();
+                double avg = 0;
+                for (double prediction : predictions) {
+                    avg += prediction;
+                }
+                avg /= predictions.length;
+                output.collect(key, new DoubleWritable[]{new DoubleWritable(avg), new DoubleWritable(albumPopularity)});
             } catch (Exception e) {
                 e.printStackTrace();
             }
