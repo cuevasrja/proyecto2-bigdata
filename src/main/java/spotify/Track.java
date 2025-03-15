@@ -94,11 +94,7 @@ public class Track {
      * @return An array of features
      */
     public Double[] getFeaturesArray() {
-        Double[] features = new Double[FEATURES];
-        for (int i = 0; i < FEATURES; i++) {
-            features[i] = trackFeatures.get(i);
-        }
-        return features;
+        return (Double[]) trackFeatures.toArray();
     }
 
     public double getAcousticness() {

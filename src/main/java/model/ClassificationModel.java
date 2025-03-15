@@ -19,13 +19,23 @@ public class ClassificationModel {
     }
 
     public void train(List<Track> tracks) throws Exception {
-        Instances dataset = parser.toDataset(tracks, target);
+        Instances dataset = parser.trackToDataset(tracks, target);
+        dataset.setClassIndex(dataset.numAttributes() - 1);
+        classifier.buildClassifier(dataset);
+    }
+
+    public void train(Instances dataset) throws Exception {
         dataset.setClassIndex(dataset.numAttributes() - 1);
         classifier.buildClassifier(dataset);
     }
 
     public void predict(List<Track> tracks) throws Exception {
-        Instances dataset = parser.toDataset(tracks, target);
+        Instances dataset = parser.trackToDataset(tracks, target);
+        eval = new Evaluation(dataset);
+        eval.evaluateModel(classifier, dataset);
+    }
+
+    public void predict(Instances dataset) throws Exception {
         eval = new Evaluation(dataset);
         eval.evaluateModel(classifier, dataset);
     }

@@ -78,7 +78,7 @@ public class ArtistsPopularities extends Configured implements Tool {
         conf.setJobName("Get the relationship between artists popularity and their songs popularity");
 
         conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(IntWritable.class);
+        conf.setOutputValueClass(FloatWritable.class);
 
         conf.setMapperClass(ArtistsPopularitiesMapper.class);
         conf.setReducerClass(ArtistsPopularitiesReducer.class);

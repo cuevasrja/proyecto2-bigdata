@@ -150,7 +150,7 @@ public class SpotifyCsvParser {
      * @param target
      * @return A Weka dataset.
      */
-    public Instances toDataset(List<Track> tracks, String target) {
+    public Instances trackToDataset(List<Track> tracks, String target) {
         // Define the attributes
         ArrayList<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("acousticness"));
@@ -207,6 +207,48 @@ public class SpotifyCsvParser {
 
             dataset.add(new DenseInstance(1.0, values));
         }
+
+        return dataset;
+    }
+
+    public Instances arrayToDataset(List<double[]> data, String target) {
+        // Define the attributes
+        ArrayList<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("acousticness"));
+        attributes.add(new Attribute("danceability"));
+        attributes.add(new Attribute("energy"));
+        attributes.add(new Attribute("instrumentalness"));
+        attributes.add(new Attribute("liveness"));
+        attributes.add(new Attribute("loudness"));
+        attributes.add(new Attribute("speechiness"));
+        attributes.add(new Attribute("tempo"));
+        attributes.add(new Attribute("valence"));
+        attributes.add(new Attribute("duration"));
+        attributes.add(new Attribute("explicit"));
+        attributes.add(new Attribute("key"));
+        attributes.add(new Attribute("mode"));
+        attributes.add(new Attribute("time_signature"));
+        attributes.add(new Attribute("followers"));
+        attributes.add(new Attribute("album_popularity"));
+        attributes.add(new Attribute("artist_popularity"));
+        
+        // Define the class attribute values
+        ArrayList<String> classValues = new ArrayList<>();
+        for (int i = 0; i <= 100; i++) {
+            classValues.add(String.valueOf(i));
+        }
+        // Add the class attribute target
+        attributes.add(new Attribute(target, classValues));
+
+        // Create the dataset
+        Instances dataset = new Instances("tracks", attributes, data.size());
+        dataset.setClassIndex(attributes.size() - 1);
+
+        // Add the tracks to the dataset as instances
+        for (double[] values : data) {
+            dataset.add(new DenseInstance(1.0, values));
+        }
+
 
         return dataset;
     }
