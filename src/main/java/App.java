@@ -1,4 +1,5 @@
-package mapreduce;
+import mapreduce.ArtistsPopularities;
+import mapreduce.ClassifyPopularity;
 
 public class App {
 	public static void main(String[] args) throws Exception {
