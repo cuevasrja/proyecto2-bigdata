@@ -1,38 +1,27 @@
 package mapreduce;
 
-// import com.google.common.collect.Lists;
-// import org.apache.mahout.classifier.evaluation.Auc;
-// import org.apache.mahout.classifier.sgd.L1;
-// import org.apache.mahout.classifier.sgd.OnlineLogisticRegression;
-
-// import java.util.Collections;
-import java.util.List;
-
-import org.apache.hadoop.io.Text;
-
-import model.ClassificationModel;
-import parser.SpotifyCsvParser;
-import spotify.Track;
-
 public class App {
-      public static void main(String[] args) throws Exception {
-        // if (args.length < 1) {
-        //     System.out.println("Usage: App <file> [target]");
-        //     System.exit(1);
-        // }
-        Text file = new Text("./tracks/tracks_n_200.csv");
-        String target = args.length > 1 ? args[1] : "popularity";
-        SpotifyCsvParser parser = new SpotifyCsvParser();
-        ClassificationModel model = new ClassificationModel(target);
-        try {
-            List<Track> tracks = parser.parse(file);
-            model.train(tracks);
-            model.predict(tracks);
-            model.printMetrics();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-      }
+	public static void main(String[] args) throws Exception {
+		if (args.length < 2) {
+			System.out.println("Usage: App <option> <file> <output>");
+			System.exit(1);
+		}
+		int option = Integer.parseInt(args[0]);
+		String[] newArgs = new String[args.length - 1];
+		System.arraycopy(args, 1, newArgs, 0, args.length - 1);
+		switch (option) {
+			case 1:
+				ClassifyPopularity classifyPopularity = new ClassifyPopularity();
+				classifyPopularity.run(newArgs);
+				break;
+			case 2:
+				ArtistsPopularities artistsPopularities = new ArtistsPopularities();
+				artistsPopularities.run(newArgs);
+				break;
+			default:
+				System.out.println("Invalid option");
+				System.exit(1);
+		}
+	}
 }
 
