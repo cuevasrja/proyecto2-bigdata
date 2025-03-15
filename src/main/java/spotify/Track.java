@@ -1,18 +1,15 @@
 package spotify;
 
 import java.util.Map;
-
-import org.apache.mahout.math.RandomAccessSparseVector;
-import org.apache.mahout.vectorizer.encoders.ConstantValueEncoder;
-import org.apache.mahout.vectorizer.encoders.FeatureVectorEncoder;
-import org.apache.mahout.vectorizer.encoders.StaticWordValueEncoder;
 import com.google.common.collect.Maps;
 
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /*
  {"namespace": "classes.avro",
@@ -22,8 +19,8 @@ import java.util.Iterator;
      {"name": "id", "type": "string"},
      {"name": "track_name",  "type": "string"},
      {"name": "disc_number", "type": "int"},
-    1 {"name": "duration", "type": "int"},
-    2 {"name": "explicit", "type": "int"},
+     {"name": "duration", "type": "int"},
+     {"name": "explicit", "type": "int"},
      {"name": "audio_feature_id", "type": ["string", "null"]},
      {"name": "preview_url", "type": ["string", "null"]},
      {"name": "track_number", "type": ["int", "string", "null"]},
@@ -56,20 +53,14 @@ import java.util.Iterator;
 public class Track {
     public static final int FEATURES = 17;
     public static final int TARGETS = 1;
-    private static final ConstantValueEncoder interceptEncoder = new ConstantValueEncoder("intercept");
-    private static final FeatureVectorEncoder featureEncoder = new StaticWordValueEncoder("feature");
-    private static final FeatureVectorEncoder targetEncoder = new StaticWordValueEncoder("target");
 
-    private RandomAccessSparseVector featuresVector;
-    private RandomAccessSparseVector targetsVector;
+    private List<Double> trackFeatures = new ArrayList<Double>(FEATURES);
+    private List<Double> targetList = new ArrayList<Double>(TARGETS);
 
     private Map<String, String> fields = Maps.newLinkedHashMap();
 
     public Track(Iterable<String> fieldNames, Iterable<String> values) {
-        featuresVector = new RandomAccessSparseVector(FEATURES);
-        targetsVector = new RandomAccessSparseVector(TARGETS);
         Iterator<String> valueIterator = values.iterator();
-        interceptEncoder.addToVector("1", featuresVector);
         for (String fieldName : fieldNames) {
             String value = valueIterator.next();
             fields.put(fieldName, value);
@@ -98,8 +89,8 @@ public class Track {
                 case "mode":
                 case "time_signature":
                 case "followers":
-                    int v = value != null && !value.equals("") ? Integer.parseInt(value) : 0;
-                    featureEncoder.addToVector(fieldName, v, featuresVector);
+                    Double v = value != null && !value.equals("") ? Double.parseDouble(value) : 0.0;
+                    trackFeatures.add(v);
                     break;
                 case "acousticness":
                 case "danceability":
@@ -110,14 +101,14 @@ public class Track {
                 case "speechiness":
                 case "tempo":
                 case "valence":
-                    float f = value != null && !value.equals("") ? Float.parseFloat(value) : 0.0f;
-                    featureEncoder.addToVector(fieldName, f, featuresVector);
+                    Double f = value != null && !value.equals("") ? Double.parseDouble(value) : 0.0f;
+                    trackFeatures.add(f);
                     break;
                 case "popularity":
                 case "album_popularity":
                 case "artist_popularity":
-                    int t = value != null && !value.equals("") ? Integer.parseInt(value) : 0;
-                    targetEncoder.addToVector(fieldName, t, targetsVector);
+                    Double t = value != null && !value.equals("") ? Double.parseDouble(value) : 0;
+                    targetList.add(t);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown field name: " + fieldName);
@@ -129,14 +120,14 @@ public class Track {
         return Integer.parseInt(fields.get(target));
     }
 
-    public RandomAccessSparseVector getFeatures() {
-        return featuresVector;
+    public List<Double> getTrackFeatures() {
+        return trackFeatures;
     }
 
     public Double[] getFeaturesArray() {
         Double[] features = new Double[FEATURES];
         for (int i = 0; i < FEATURES; i++) {
-            features[i] = featuresVector.get(i);
+            features[i] = trackFeatures.get(i);
         }
         return features;
     }
@@ -214,14 +205,11 @@ public class Track {
         Instance instance = new DenseInstance(FEATURES+1);
         instance.setDataset(dataset);
         for (int i = 0; i < FEATURES; i++) {
-            instance.setValue(i, featuresVector.get(i));
+            instance.setValue(i, trackFeatures.get(i));
         }
         instance.setValue(FEATURES, this.getCategory(target));
         
         return instance;
     }
 
-    // RandomAccessSparseVector getTargets() {
-    //     return targetsVector;
-    // }
 }
