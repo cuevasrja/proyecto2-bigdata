@@ -109,9 +109,9 @@ Number of rows: 8741672
 """
 
 # Si el número de argumentos es incorrecto, mostrar un mensaje de error
-if len(sys.argv) != 3:
+if len(sys.argv) != 3 and len(sys.argv) != 4:
     print("\033[91mError: Número de argumentos incorrecto\033[0m")
-    print("\033[93mUso\033[0m: python generator.py <flag>")
+    print("\033[93mUso\033[0m: python generator.py <flag> <n> <order>")
     print("\033[93mFlags\033[0m:")
     print("\033[93m-n\033[0m: Generar un archivo CSV con <n> tracks")
     print("\033[93m-p\033[0m: Generar un archivo CSV con el 100*p% de tracks")
@@ -137,6 +137,8 @@ else:
     print("\033[91mError: Argumento incorrecto\033[0m")
     sys.exit(1)
 
+order = sys.argv[3] if len(sys.argv) == 4 else "ASC"
+
 conn.text_factory = lambda b: b.decode(errors = 'ignore')
 
 # Función para forzar la decodificación en UTF-8
@@ -150,9 +152,11 @@ print("Leer los datos de la base de datos")
 print(f"Number of tracks: {n_tracks}")
 print(f"Tracks filtered: {filtered_tracks}")
 
+groups = int(filtered_tracks/100) if filtered_tracks >= 200 else 5
+
 # Query para obtener los datos de los tracks Agrupados por popularidad donde hay {filtered_tracks/100} de los tracks en cada grupo (Si hay mas se toman los primeros)
 query = f"""
-WITH RankedTracks AS (
+WITH ArtistSongs AS (
     SELECT
         t.id,
         t.name AS track_name,
@@ -185,7 +189,7 @@ WITH RankedTracks AS (
         artists.popularity AS artist_popularity,
         artists.followers,
         genres.genre_id AS genre_id,
-        ROW_NUMBER() OVER (PARTITION BY t.popularity ORDER BY t.popularity DESC) AS row_num
+        ROW_NUMBER() OVER (PARTITION BY artists.name) AS row_num
     FROM tracks AS t
     LEFT JOIN audio_features AS af ON t.audio_feature_id = af.id
     LEFT JOIN r_albums_tracks AS rat ON t.id = rat.track_id
@@ -226,9 +230,9 @@ SELECT
     artist_popularity,
     followers,
     genre_id
-FROM RankedTracks
-WHERE row_num <= {int(filtered_tracks/100)}
-ORDER BY popularity DESC
+FROM ArtistSongs
+WHERE row_num <= {groups}
+ORDER BY artist_name {order}, popularity DESC
 LIMIT {filtered_tracks};"""
 
 print("Query:")
@@ -239,7 +243,7 @@ tracks = force_utf8(tracks)
 
 print(tracks.head())
 
-output_file = f"tracks_n_{filtered_tracks}.csv" if sys.argv[1] == "-n" else f"tracks_p_{filtered_tracks}.csv"
+output_file = f"tracks_artist_n_{filtered_tracks}.csv" if sys.argv[1] == "-n" else f"tracks_artist_p_{filtered_tracks}.csv"
 print(f"Write to {output_file}")
 
 # Si la carpeta tracks no existe, crearla

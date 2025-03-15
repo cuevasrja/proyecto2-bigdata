@@ -209,3 +209,6 @@ if not os.path.exists("tracks"):
 
 # Convertir la tabla a un archivo CSV y guardar en tracks/<output_file>
 tracks.to_csv(f"tracks/{output_file}", index=False)
+
+# Cerrar la conexión a la base de datos
+conn.close()
