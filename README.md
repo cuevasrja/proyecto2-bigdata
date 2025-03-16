@@ -37,3 +37,9 @@ Ejemplo:
 ```bash
 hadoop jar target/mapreduce-1.0-SNAPSHOT-jar-with-dependencies.jar App 1 tracks/tracks_n_200.csv out/
 ```
+
+Para ejecutar el proyecto localmente, se debe correr el siguiente comando en la terminal:
+
+```bash
+mvn exec:java -Dexec.mainClass="App" -Dexec.args="<n> <input> <output>"
+```
