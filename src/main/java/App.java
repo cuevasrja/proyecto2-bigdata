@@ -1,6 +1,7 @@
 import mapreduce.ArtistsPopularities;
 import mapreduce.ClassifyPopularity;
 import mapreduce.RelationPopularity;
+import mapreduce.GenresPopularities;
 
 public class App {
 	public static void main(String[] args) throws Exception {
@@ -20,10 +21,10 @@ public class App {
 				ArtistsPopularities artistsPopularities = new ArtistsPopularities();
 				artistsPopularities.execute(newArgs);
 				break;
-
-
-
-
+			case 3:
+				GenresPopularities genresPopularities = new GenresPopularities();
+				genresPopularities.run(newArgs);
+				break;
 			case 4:
 				RelationPopularity relationPopularity = new RelationPopularity();
 				relationPopularity.execute(newArgs);
