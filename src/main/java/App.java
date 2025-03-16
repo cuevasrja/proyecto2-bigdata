@@ -1,5 +1,6 @@
 import mapreduce.ArtistsPopularities;
 import mapreduce.ClassifyPopularity;
+import mapreduce.RelationPopularity;
 
 public class App {
 	public static void main(String[] args) throws Exception {
@@ -13,11 +14,19 @@ public class App {
 		switch (option) {
 			case 1:
 				ClassifyPopularity classifyPopularity = new ClassifyPopularity();
-				classifyPopularity.run(newArgs);
+				classifyPopularity.execute(newArgs);
 				break;
 			case 2:
 				ArtistsPopularities artistsPopularities = new ArtistsPopularities();
-				artistsPopularities.run(newArgs);
+				artistsPopularities.execute(newArgs);
+				break;
+
+
+
+
+			case 4:
+				RelationPopularity relationPopularity = new RelationPopularity();
+				relationPopularity.execute(newArgs);
 				break;
 			default:
 				System.out.println("Invalid option");

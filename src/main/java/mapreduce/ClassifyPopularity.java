@@ -153,23 +153,8 @@ public class ClassifyPopularity extends Configured implements Tool{
         return 0;
     }
 
-    // public static void main(String[] args) throws Exception {
-    //     if (args.length < 1) {
-    //         System.out.println("Usage: App <file> [target]");
-    //         System.exit(1);
-    //     }
-    //     Text file = new Text("./tracks/tracks_n_200.csv");
-    //     String target = args.length > 1 ? args[1] : "popularity";
-    //     SpotifyCsvParser parser = new SpotifyCsvParser();
-    //     ClassificationModel model = new ClassificationModel(target);
-    //     try {
-    //         List<Track> tracks = parser.parse(file);
-    //         model.train(tracks);
-    //         model.predict(tracks);
-    //         model.printMetrics();
-            
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    //   }
+    public void execute(String[] args) throws Exception {
+        int res = ToolRunner.run(new ClassifyPopularity(), args);
+        System.exit(res);
+    }
 }

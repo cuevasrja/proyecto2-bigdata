@@ -93,4 +93,8 @@ public class ArtistsPopularities extends Configured implements Tool {
         return 0;
     }
     
+    public void execute(String[] args) throws Exception {
+        int res = ToolRunner.run(new ArtistsPopularities(), args);
+        System.exit(res);
+    }
 }
