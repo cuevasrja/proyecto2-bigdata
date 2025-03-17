@@ -39,9 +39,9 @@ public class RelationPopularity extends Configured implements Tool {
             Track track = parser.parseCSVLine(line);
 
             // Get the acousticness, danceability and energy values
-            Double acousticness = Double.parseDouble(track.get("acousticness"));
-            Double danceability = Double.parseDouble(track.get("danceability"));
-            Double energy = Double.parseDouble(track.get("energy"));
+            Double acousticness = Double.parseDouble(track.get("acousticness").equals("") ? "0" : track.get("acousticness"));
+            Double danceability = Double.parseDouble(track.get("danceability").equals("") ? "0" : track.get("danceability"));
+            Double energy = Double.parseDouble(track.get("energy").equals("") ? "0" : track.get("energy"));
 
             // Find the highest value between acousticness, danceability and energy
             if (acousticness >= danceability && acousticness >= energy) {
