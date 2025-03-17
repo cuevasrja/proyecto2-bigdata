@@ -90,12 +90,12 @@ public class RelationPopularity extends Configured implements Tool {
             }
 
             // Calculate the percentage of each feature
-            float acousticnessPercentage = (float) acousticness / count;
-            float danceabilityPercentage = (float) danceability / count;
-            float energyPercentage = (float) energy / count;
+            float acousticnessPercentage = (float) acousticness / count * 100;
+            float danceabilityPercentage = (float) danceability / count * 100;
+            float energyPercentage = (float) energy / count * 100;
 
             // Output the key and the percentages of each feature
-            output.collect(key, new Text("acousticness: " + acousticnessPercentage + ", danceability: " + danceabilityPercentage + ", energy: " + energyPercentage));
+            output.collect(key, new Text("acousticness: " + acousticnessPercentage + "%, danceability: " + danceabilityPercentage + "%, energy: " + energyPercentage + "%"));
         }
     }
 

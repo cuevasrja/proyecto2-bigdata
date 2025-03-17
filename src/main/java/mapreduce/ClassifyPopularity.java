@@ -47,7 +47,7 @@ public class ClassifyPopularity extends Configured implements Tool{
                 featuresString += features[i] + ",";
             }
             featuresString += targetValue.toString();
-            album.set(track.get("album_name"));
+            album.set(track.get("album_name").equals("") || track.get("album_name") == null ? "unknown" : track.get("album_name"));
             trackFeatures.set(featuresString);
             output.collect(album, trackFeatures);
         }
