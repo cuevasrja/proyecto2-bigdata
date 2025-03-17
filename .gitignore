@@ -46,6 +46,7 @@ nbdist/
 input/
 output*/
 data/
+out*/
 
 # Python
 spotify.sqlite

@@ -15,9 +15,9 @@ import spotify.Track;
 public class ArtistsPopularities extends Configured implements Tool {
     static SpotifyCsvParser parser = new SpotifyCsvParser();
 
-    public static class ArtistsPopularitiesMapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, FloatWritable> {
+    public static class ArtistsPopularitiesMapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
         private Text artist = new Text();
-        private FloatWritable songPopularity = new FloatWritable();
+        private Text songPopularity = new Text();
 
         /**
          * Map the input values.
@@ -27,7 +27,7 @@ public class ArtistsPopularities extends Configured implements Tool {
          * @param reporter Facility to report progress.
          * @throws IOException
          */
-        public void map(LongWritable key, Text value, OutputCollector<Text, FloatWritable> output, Reporter reporter) throws IOException {
+        public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
             String line = value.toString();
 
             // Skip the header
@@ -40,12 +40,14 @@ public class ArtistsPopularities extends Configured implements Tool {
 
             // Get the artist name and song popularity
             artist.set(track.get("artist_name"));
-            songPopularity.set(Float.parseFloat(track.get("popularity")));
+            String songPopularityString = track.get("popularity");
+            String artistPopularity = track.get("artist_popularity").equals("") ? "0" : track.get("artist_popularity");
+            songPopularity.set(songPopularityString + "," + artistPopularity);
             output.collect(artist, songPopularity);
         }
     }
 
-    public static class ArtistsPopularitiesReducer extends MapReduceBase implements Reducer<Text, FloatWritable, Text, FloatWritable> {
+    public static class ArtistsPopularitiesReducer extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
         /**
          * Reduce the values for each key.
          * @param key The key.
@@ -54,15 +56,19 @@ public class ArtistsPopularities extends Configured implements Tool {
          * @param reporter Facility to report progress.
          * @throws IOException
          */
-        public void reduce(Text key, Iterator<FloatWritable> values, OutputCollector<Text, FloatWritable> output, Reporter reporter) throws IOException {
+        public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
             // Initialize the sum and count
             float sum = 0;
             int count = 0;
+            float artistPopularity = 0;
 
             // Calculate the sum and count
             while (values.hasNext()) {
+                String[] songPopularity = values.next().toString().split(",");
                 // Get the song popularity and sum it
-                sum += values.next().get();
+                sum += Float.parseFloat(songPopularity[0]);
+                // Get the artist popularity
+                artistPopularity = Float.parseFloat(songPopularity[1]);
                 // Increment the count
                 count++;
             }
@@ -71,7 +77,7 @@ public class ArtistsPopularities extends Configured implements Tool {
             float avg = sum / count;
 
             // Output the artist and the average popularity
-            output.collect(key, new FloatWritable(avg));
+            output.collect(key, new Text("Average song popularity: " + avg + ", Artist popularity: " + artistPopularity));
         }
     }
 
@@ -90,7 +96,7 @@ public class ArtistsPopularities extends Configured implements Tool {
         conf.setJobName("Get the relationship between artists popularity and their songs popularity");
 
         conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(FloatWritable.class);
+        conf.setOutputValueClass(Text.class);
 
         conf.setMapperClass(ArtistsPopularitiesMapper.class);
         conf.setReducerClass(ArtistsPopularitiesReducer.class);
