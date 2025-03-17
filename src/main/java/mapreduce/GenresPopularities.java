@@ -29,10 +29,13 @@ public class GenresPopularities extends Configured implements Tool {
          */
         public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
             String line = value.toString();
+            if (line.startsWith("\"id\"")) {
+                return;
+            }
             Track track = parser.parseCSVLine(line);
-            genre.set(track.get("genre_id"));
-            String songPopularity = track.get("popularity");
-            String albumPopularity = track.get("album_popularity");
+            genre.set(track.get("genre_id").equals("") || track.get("genre_id") == null ? "unknown" : track.get("genre_id"));
+            int songPopularity = track.get("popularity").equals("") || track.get("popularity") == null ? 0 : Integer.parseInt(track.get("popularity"));
+            int albumPopularity = track.get("album_popularity").equals("") || track.get("album_popularity") == null ? 0 : Integer.parseInt(track.get("album_popularity"));
             popularityValues.set(songPopularity + "," + albumPopularity);
             output.collect(genre, popularityValues);
         }
@@ -101,7 +104,7 @@ public class GenresPopularities extends Configured implements Tool {
         conf.setJobName("Get the relationship between genre popularity and their songs popularity");
 
         conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(FloatWritable.class);
+        conf.setOutputValueClass(Text.class);
 
         conf.setMapperClass(GenresPopularitiesMapper.class);
         conf.setReducerClass(GenresPopularitiesReducer.class);
@@ -116,7 +119,7 @@ public class GenresPopularities extends Configured implements Tool {
         return 0;
     }
 
-    public static void main(String[] args) throws Exception {
+    public void execute(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new GenresPopularities(), args);
         System.exit(res);
     }

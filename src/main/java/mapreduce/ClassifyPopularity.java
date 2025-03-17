@@ -21,9 +21,9 @@ import weka.core.Instances;
 public class ClassifyPopularity extends Configured implements Tool{
     static SpotifyCsvParser parser = new SpotifyCsvParser();
 
-    public static class SongPopularityMapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, DoubleWritable[]> {
+    public static class SongPopularityMapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
         private Text album = new Text();
-        private DoubleWritable[] trackFeatures = new DoubleWritable[Track.FEATURES+1];
+        private Text trackFeatures = new Text();
 
         /**
          * Map the input values.
@@ -33,28 +33,34 @@ public class ClassifyPopularity extends Configured implements Tool{
          * @param reporter Facility to report progress.
          * @throws IOException
          */
-        public void map(LongWritable key, Text value, OutputCollector<Text, DoubleWritable[]> output, Reporter reporter) throws IOException {
+        public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
             String line = value.toString();
-            Track track = parser.parseCSVLine(line);
-            Double targetValue = Double.parseDouble(track.get("popularity"));
-            Double[] features = track.getFeaturesArray();
-            for (int i = 0; i < Track.FEATURES; i++) {
-                trackFeatures[i] = new DoubleWritable(features[i]);
+            if (line.startsWith("\"id\"")) {
+                return;
             }
-            trackFeatures[Track.FEATURES] = new DoubleWritable(targetValue);
+
+            Track track = parser.parseCSVLine(line);
+            Double targetValue = Double.parseDouble(track.get("popularity").equals("") || track.get("popularity") == null ? "0" : track.get("popularity"));
+            String[] features = track.getFeaturesArrayToString();
+            String featuresString = "";
+            for (int i = 0; i < features.length; i++) {
+                featuresString += features[i] + ",";
+            }
+            featuresString += targetValue.toString();
             album.set(track.get("album_name"));
+            trackFeatures.set(featuresString);
             output.collect(album, trackFeatures);
         }
     }
 
-    public static class SongPopularityReducer extends MapReduceBase implements Reducer<Text, DoubleWritable[], Text, DoubleWritable[]> {
+    public static class SongPopularityReducer extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
         /**
          * Convert the array of DoubleWritable to a Weka dataset.
          * @param data The data.
          * @param target The target attribute.
          * @return The dataset.
          */
-        public Instances arrayToDataset(Iterator<DoubleWritable[]> data, String target) {
+        public Instances arrayToDataset(Iterator<Text> data, String target) {
             // Define the attributes
             ArrayList<Attribute> attributes = new ArrayList<>();
             attributes.add(new Attribute("acousticness"));
@@ -87,11 +93,13 @@ public class ClassifyPopularity extends Configured implements Tool{
             List<double[]> dataValues = new ArrayList<>();
             // Add the tracks to the list
             while (data.hasNext()) {
-                DoubleWritable[] writableArray = data.next();
+                Text node = data.next();
+                String[] writableArray = node.toString().split(",");
                 double[] trackFeatures = new double[writableArray.length];
                 for (int i = 0; i < writableArray.length; i++) {
-                    trackFeatures[i] = writableArray[i].get();
+                    trackFeatures[i] = Double.parseDouble(writableArray[i].equals("") || writableArray[i] == null ? "0" : writableArray[i]);
                 }
+                System.out.println(trackFeatures.length);
                 dataValues.add(trackFeatures);
             }
 
@@ -115,20 +123,23 @@ public class ClassifyPopularity extends Configured implements Tool{
          * @param reporter Facility to report progress.
          * @throws IOException
          */
-        public void reduce(Text key, Iterator<DoubleWritable[]> values, OutputCollector<Text, DoubleWritable[]> output, Reporter reporter) throws IOException {
+        public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
             Instances dataset = arrayToDataset(values, "popularity");
-            double albumPopularity = values.hasNext() ? values.next()[15].get() : 0;
+            Text node = values.hasNext() ? values.next() : new Text();
+            String[] valuesArray = node.toString().split(",");
+            System.out.println(valuesArray.length);
+            double albumPopularity = valuesArray.length >= 16 ? Double.parseDouble(valuesArray[15]) : 0;
             ClassificationModel model = new ClassificationModel("popularity");
             try {
                 model.train(dataset);
                 double[] predictions = model.predict(dataset);
-                model.printMetrics();
+                // model.printMetrics();
                 double avg = 0;
                 for (double prediction : predictions) {
                     avg += prediction;
                 }
                 avg /= predictions.length;
-                output.collect(key, new DoubleWritable[]{new DoubleWritable(avg), new DoubleWritable(albumPopularity)});
+                output.collect(key, new Text(avg + "," + albumPopularity));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -140,7 +151,7 @@ public class ClassifyPopularity extends Configured implements Tool{
         conf.setJobName("classify-popularity");
 
         conf.setOutputKeyClass(Text.class);
-        conf.setOutputValueClass(DoubleWritable[].class);
+        conf.setOutputValueClass(Text.class);
 
         conf.setMapperClass(SongPopularityMapper.class);
         conf.setReducerClass(SongPopularityReducer.class);
@@ -150,6 +161,8 @@ public class ClassifyPopularity extends Configured implements Tool{
 
         FileInputFormat.setInputPaths(conf, new Path(args[0]));
         FileOutputFormat.setOutputPath(conf, new Path(args[1]));
+
+        JobClient.runJob(conf);
         return 0;
     }
 

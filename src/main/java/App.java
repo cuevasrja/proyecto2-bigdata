@@ -23,7 +23,7 @@ public class App {
 				break;
 			case 3:
 				GenresPopularities genresPopularities = new GenresPopularities();
-				genresPopularities.run(newArgs);
+				genresPopularities.execute(newArgs);
 				break;
 			case 4:
 				RelationPopularity relationPopularity = new RelationPopularity();

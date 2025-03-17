@@ -3,6 +3,7 @@ package spotify;
 import java.util.Map;
 import com.google.common.collect.Maps;
 
+import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -41,17 +42,8 @@ public class Track {
                 case "release_date":
                 case "track_number":
                 case "disc_number":
-                    // featureEncoder.addToVector(value != null ? fieldName + ":" + value : fieldName, 0.0, featuresVector);
-                    break;
-                case "duration":
-                case "explicit":
                 case "is_playable":
-                case "key":
-                case "mode":
-                case "time_signature":
-                case "followers":
-                    Double v = value != null && !value.equals("") ? Double.parseDouble(value) : 0.0;
-                    trackFeatures.add(v);
+                    // featureEncoder.addToVector(value != null ? fieldName + ":" + value : fieldName, 0.0, featuresVector);
                     break;
                 case "acousticness":
                 case "danceability":
@@ -62,14 +54,21 @@ public class Track {
                 case "speechiness":
                 case "tempo":
                 case "valence":
-                    Double f = value != null && !value.equals("") ? Double.parseDouble(value) : 0.0f;
-                    trackFeatures.add(f);
+                case "duration":
+                case "explicit":
+                case "key":
+                case "mode":
+                case "time_signature":
+                case "followers":
+                    Double v = value != null && !value.equals("") ? Double.parseDouble(value) : 0.0;
+                    trackFeatures.add(v);
                     break;
                 case "popularity":
                 case "album_popularity":
                 case "artist_popularity":
                     Double t = value != null && !value.equals("") ? Double.parseDouble(value) : 0;
                     targetList.add(t);
+                    trackFeatures.add(t);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown field name: " + fieldName);
@@ -94,7 +93,19 @@ public class Track {
      * @return An array of features
      */
     public Double[] getFeaturesArray() {
-        return (Double[]) trackFeatures.toArray();
+        Double[] features = new Double[trackFeatures.size()];
+        for (int i = 0; i < trackFeatures.size(); i++) {
+            features[i] = trackFeatures.get(i);
+        }
+        return features;
+    }
+
+    public String[] getFeaturesArrayToString() {
+        String[] features = new String[trackFeatures.size()];
+        for (int i = 0; i < trackFeatures.size(); i++) {
+            features[i] = trackFeatures.get(i).toString();
+        }
+        return features;
     }
 
     public double getAcousticness() {

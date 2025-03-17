@@ -35,6 +35,10 @@ public class RelationPopularity extends Configured implements Tool {
          */
         public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
             String line = value.toString();
+            if (line.startsWith("\"id\"")) {
+                return;
+            }
+
             Track track = parser.parseCSVLine(line);
             Double acousticness = Double.parseDouble(track.get("acousticness"));
             Double danceability = Double.parseDouble(track.get("danceability"));
