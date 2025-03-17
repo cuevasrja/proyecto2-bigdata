@@ -3,7 +3,6 @@ package spotify;
 import java.util.Map;
 import com.google.common.collect.Maps;
 
-import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -63,12 +62,15 @@ public class Track {
                     Double v = value != null && !value.equals("") ? Double.parseDouble(value) : 0.0;
                     trackFeatures.add(v);
                     break;
-                case "popularity":
                 case "album_popularity":
                 case "artist_popularity":
                     Double t = value != null && !value.equals("") ? Double.parseDouble(value) : 0;
                     targetList.add(t);
                     trackFeatures.add(t);
+                    break;
+                case "popularity":
+                    Double d = value != null && !value.equals("") ? Double.parseDouble(value) : 0;
+                    targetList.add(d);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown field name: " + fieldName);

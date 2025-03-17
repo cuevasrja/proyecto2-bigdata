@@ -60,7 +60,7 @@ public class ClassifyPopularity extends Configured implements Tool{
          * @param target The target attribute.
          * @return The dataset.
          */
-        public Instances arrayToDataset(Iterator<Text> data, String target) {
+        public Instances arrayToDataset(Iterator<Text> data, String target, Text acc) {
             // Define the attributes
             ArrayList<Attribute> attributes = new ArrayList<>();
             attributes.add(new Attribute("acousticness"));
@@ -99,7 +99,7 @@ public class ClassifyPopularity extends Configured implements Tool{
                 for (int i = 0; i < writableArray.length; i++) {
                     trackFeatures[i] = Double.parseDouble(writableArray[i].equals("") || writableArray[i] == null ? "0" : writableArray[i]);
                 }
-                System.out.println(trackFeatures.length);
+                acc.set(node.toString());
                 dataValues.add(trackFeatures);
             }
 
@@ -124,10 +124,9 @@ public class ClassifyPopularity extends Configured implements Tool{
          * @throws IOException
          */
         public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
-            Instances dataset = arrayToDataset(values, "popularity");
-            Text node = values.hasNext() ? values.next() : new Text();
+            Text node = new Text();
+            Instances dataset = arrayToDataset(values, "popularity", node);
             String[] valuesArray = node.toString().split(",");
-            System.out.println(valuesArray.length);
             double albumPopularity = valuesArray.length >= 16 ? Double.parseDouble(valuesArray[15]) : 0;
             ClassificationModel model = new ClassificationModel("popularity");
             try {
@@ -139,7 +138,7 @@ public class ClassifyPopularity extends Configured implements Tool{
                     avg += prediction;
                 }
                 avg /= predictions.length;
-                output.collect(key, new Text(avg + "," + albumPopularity));
+                output.collect(key, new Text(avg + ", " + albumPopularity));
             } catch (Exception e) {
                 e.printStackTrace();
             }
