@@ -11,6 +11,7 @@ public class App {
 		}
 		int option = Integer.parseInt(args[0]);
 		String[] newArgs = new String[args.length - 1];
+		// Copy the arguments to a new array
 		System.arraycopy(args, 1, newArgs, 0, args.length - 1);
 		switch (option) {
 			case 1:

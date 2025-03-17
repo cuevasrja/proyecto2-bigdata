@@ -40,6 +40,8 @@ public class ClassifyPopularity extends Configured implements Tool{
             }
 
             Track track = parser.parseCSVLine(line);
+
+            // Get the target value and the features
             Double targetValue = Double.parseDouble(track.get("popularity").equals("") || track.get("popularity") == null ? "0" : track.get("popularity"));
             String[] features = track.getFeaturesArrayToString();
             String featuresString = "";
@@ -125,6 +127,7 @@ public class ClassifyPopularity extends Configured implements Tool{
          * @throws IOException
          */
         public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
+            // Create a new text node
             Text node = new Text();
 
             // Create the dataset
