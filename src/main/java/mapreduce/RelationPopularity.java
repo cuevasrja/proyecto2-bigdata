@@ -21,8 +21,8 @@ import weka.core.Instances;
 public class RelationPopularity extends Configured implements Tool {
     static SpotifyCsvParser parser = new SpotifyCsvParser();
 
-    public static class SongPopularityMapper extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
-        private Text popularity = new Text();
+    public static class SongPopularityMapper extends MapReduceBase implements Mapper<LongWritable, Text, IntWritable, Text> {
+        private IntWritable popularity = new IntWritable();
         private Text trackFeatures = new Text();
 
         /**
@@ -33,7 +33,7 @@ public class RelationPopularity extends Configured implements Tool {
          * @param reporter Facility to report progress.
          * @throws IOException
          */
-        public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
+        public void map(LongWritable key, Text value, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
             String line = value.toString();
             if (line.startsWith("\"id\"")) {
                 return;
@@ -52,12 +52,12 @@ public class RelationPopularity extends Configured implements Tool {
                 trackFeatures.set("energy");
             }
 
-            popularity.set(track.get("popularity"));
+            popularity.set(track.get("popularity").equals("") ? 0 : Integer.parseInt(track.get("popularity")));
             output.collect(popularity, trackFeatures);
         }
     }
 
-    public static class SongPopularityReducer extends MapReduceBase implements Reducer<Text, Text, Text, FloatWritable> {
+    public static class SongPopularityReducer extends MapReduceBase implements Reducer<IntWritable, Text, IntWritable, Text> {
         /**
          * Reduce the values for each key.
          * @param key The key.
@@ -66,7 +66,7 @@ public class RelationPopularity extends Configured implements Tool {
          * @param reporter Facility to report progress.
          * @throws IOException
          */
-        public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, FloatWritable> output, Reporter reporter) throws IOException {
+        public void reduce(IntWritable key, Iterator<Text> values, OutputCollector<IntWritable, Text> output, Reporter reporter) throws IOException {
             int count = 0;
             int acousticness = 0;
             int danceability = 0;
@@ -88,9 +88,7 @@ public class RelationPopularity extends Configured implements Tool {
             float danceabilityPercentage = (float) danceability / count;
             float energyPercentage = (float) energy / count;
 
-            output.collect(key, new FloatWritable(acousticnessPercentage));
-            output.collect(key, new FloatWritable(danceabilityPercentage));
-            output.collect(key, new FloatWritable(energyPercentage));
+            output.collect(key, new Text("acousticness: " + acousticnessPercentage + ", danceability: " + danceabilityPercentage + ", energy: " + energyPercentage));
         }
     }
 
@@ -98,7 +96,7 @@ public class RelationPopularity extends Configured implements Tool {
         JobConf conf = new JobConf(getConf(), RelationPopularity.class);
         conf.setJobName("relationpopularity");
 
-        conf.setOutputKeyClass(Text.class);
+        conf.setOutputKeyClass(IntWritable.class);
         conf.setOutputValueClass(Text.class);
 
         conf.setMapperClass(SongPopularityMapper.class);
