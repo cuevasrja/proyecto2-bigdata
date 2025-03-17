@@ -54,6 +54,7 @@ public class ClassifyPopularity extends Configured implements Tool{
     }
 
     public static class SongPopularityReducer extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+        ClassificationModel model = new ClassificationModel("popularity");
         /**
          * Convert the array of DoubleWritable to a Weka dataset.
          * @param data The data.
@@ -125,20 +126,29 @@ public class ClassifyPopularity extends Configured implements Tool{
          */
         public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter) throws IOException {
             Text node = new Text();
+
+            // Create the dataset
             Instances dataset = arrayToDataset(values, "popularity", node);
+
+            // Get the album popularity
             String[] valuesArray = node.toString().split(",");
             double albumPopularity = valuesArray.length >= 16 ? Double.parseDouble(valuesArray[15]) : 0;
-            ClassificationModel model = new ClassificationModel("popularity");
+
+            // Train the model
             try {
                 model.train(dataset);
+                // Predict the popularity
                 double[] predictions = model.predict(dataset);
-                // model.printMetrics();
+
+                // Calculate the average prediction
                 double avg = 0;
                 for (double prediction : predictions) {
                     avg += prediction;
                 }
                 avg /= predictions.length;
-                output.collect(key, new Text(avg + ", " + albumPopularity));
+
+                // Output the album and the popularity prediction
+                output.collect(key, new Text("Popularity Prediction: " + avg + " Album Popularity: " + albumPopularity));
             } catch (Exception e) {
                 e.printStackTrace();
             }

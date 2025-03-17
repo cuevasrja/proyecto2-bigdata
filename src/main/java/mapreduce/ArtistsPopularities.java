@@ -29,11 +29,16 @@ public class ArtistsPopularities extends Configured implements Tool {
          */
         public void map(LongWritable key, Text value, OutputCollector<Text, FloatWritable> output, Reporter reporter) throws IOException {
             String line = value.toString();
+
+            // Skip the header
             if (line.startsWith("\"id\"")) {
                 return;
             }
 
+            // Parse the CSV line
             Track track = parser.parseCSVLine(line);
+
+            // Get the artist name and song popularity
             artist.set(track.get("artist_name"));
             songPopularity.set(Float.parseFloat(track.get("popularity")));
             output.collect(artist, songPopularity);
@@ -50,13 +55,22 @@ public class ArtistsPopularities extends Configured implements Tool {
          * @throws IOException
          */
         public void reduce(Text key, Iterator<FloatWritable> values, OutputCollector<Text, FloatWritable> output, Reporter reporter) throws IOException {
+            // Initialize the sum and count
             float sum = 0;
             int count = 0;
+
+            // Calculate the sum and count
             while (values.hasNext()) {
+                // Get the song popularity and sum it
                 sum += values.next().get();
+                // Increment the count
                 count++;
             }
+
+            // Calculate the average
             float avg = sum / count;
+
+            // Output the artist and the average popularity
             output.collect(key, new FloatWritable(avg));
         }
     }
