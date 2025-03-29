@@ -23,7 +23,7 @@ mvn install && mvn compile
 Finalmente, para correr el proyecto, se debe correr el siguiente comando en la terminal:
 
 ```bash
-hadoop jar target/mapreduce-1.0-SNAPSHOT-jar-with-dependencies.jar App <n> <input> <output>
+yarn jar target/mapreduce-1.0-SNAPSHOT-jar-with-dependencies.jar App <n> <input> <output>
 ```
 
 Donde:
@@ -35,7 +35,7 @@ Donde:
 Ejemplo:
 
 ```bash
-hadoop jar target/mapreduce-1.0-SNAPSHOT-jar-with-dependencies.jar App 1 tracks/tracks_n_200.csv out/
+yarn jar target/mapreduce-1.0-SNAPSHOT-jar-with-dependencies.jar App 1 tracks/tracks_n_200.csv out/
 ```
 
 Para ejecutar el proyecto localmente, se debe correr el siguiente comando en la terminal:
